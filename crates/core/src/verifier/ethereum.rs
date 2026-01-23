@@ -41,6 +41,19 @@ mod tests {
     ) {
         let witness: BlockWitness = serde_json::from_str(witness_json).unwrap();
         let chain_spec = get_chain_spec(Chain::from_id(witness.chain_id)).unwrap();
-        run(&[witness], chain_spec).unwrap();
+        let rt = run(&[witness], chain_spec).unwrap();
+        println!("rt={:?}", rt);
     }
+}
+
+#[test]
+fn test() {
+    use super::*;
+    // use crate::BlockWitness;
+    use sbv_primitives::chainspec::{Chain, get_chain_spec, get_main_chain_spec};
+    let witness = BlockWitness::get_test_data();
+    // let chain_spec = get_chain_spec(Chain::from_id(witness.chain_id)).unwrap();
+    let chain_spec = get_main_chain_spec();
+    let rt = run(&[witness], chain_spec.into()).unwrap();
+    println!("rt={:?}", rt);
 }

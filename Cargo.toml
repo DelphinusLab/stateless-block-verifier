@@ -57,6 +57,7 @@ alloy-trie = { version = "0.9.1", default-features = false }
 alloy-primitives = { version = "1.4.1", default-features = false, features = ["map-hashbrown", "map-fxhash"] }
 # https://github.com/alloy-rs/evm
 alloy-evm = { version = "0.22.2", default-features = false }
+alloy-genesis={version = "1.0.41", default-features = false}
 
 revm-scroll = { git = "https://github.com/scroll-tech/scroll-revm", tag = "scroll-v91", default-features = false }
 
@@ -139,7 +140,7 @@ git = "https://github.com/scroll-tech/revm"
 tag = "scroll-v91"
 #path = "../revm/crates/revm"
 default-features = false
-features = ["std"]
+features = []
 
 [patch.crates-io]
 revm = { git = "https://github.com/scroll-tech/revm", tag = "scroll-v91" }

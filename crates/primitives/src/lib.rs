@@ -3,6 +3,7 @@
 /// The spec of an Ethereum network
 #[cfg(feature = "chainspec")]
 pub mod chainspec;
+pub mod main_chain_spec;
 
 /// Ethereum fork types
 #[cfg(feature = "hardforks")]
@@ -24,7 +25,8 @@ pub mod legacy_types;
 /// Types definition
 pub mod types;
 
+pub use alloy_eips::eip2930::AccessList;
 pub use alloy_primitives::{
     self, Address, B64, B256, BlockHash, BlockNumber, Bloom, Bytes, ChainId, Signature,
-    SignatureError, TxHash, U8, U256, address, b256, keccak256,
+    SignatureError, TxHash, TxKind, U8, U256, address, b256, keccak256,
 };
