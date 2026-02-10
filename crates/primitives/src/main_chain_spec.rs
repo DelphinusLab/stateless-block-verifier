@@ -35628,6 +35628,9 @@ pub fn get_main_chain_spec() -> Arc<ChainSpec> {
         difficulty: U256::from(17179869184u64),
         mix_hash: b256!("0x0000000000000000000000000000000000000000000000000000000000000000"),
         coinbase: address!("0x0000000000000000000000000000000000000000"),
+        // todo: check if the alloc can be default as it seems it does not impact evm calc after hardcode the header
+        // the alloc calc introduces 30M traces
+        // alloc:BTreeMap::default(),
         alloc,
         number: Some(0),
         parent_hash: Some(b256!(

@@ -6,10 +6,13 @@ extern crate sbv_helpers;
 /// Witness type
 pub mod witness;
 pub use witness::BlockWitness;
+/// codec for BlockWitness
+pub mod codec;
 
 mod database;
-
 mod executor;
+mod utils;
+mod witness_data;
 pub use executor::EvmExecutor;
 
 pub mod verifier;

@@ -49,8 +49,7 @@ mod tests {
 #[test]
 fn test() {
     use super::*;
-    // use crate::BlockWitness;
-    use sbv_primitives::chainspec::{Chain, get_chain_spec, get_main_chain_spec};
+    use sbv_primitives::main_chain_spec::get_main_chain_spec;
     let witness = BlockWitness::get_test_data();
     // let chain_spec = get_chain_spec(Chain::from_id(witness.chain_id)).unwrap();
     let chain_spec = get_main_chain_spec();

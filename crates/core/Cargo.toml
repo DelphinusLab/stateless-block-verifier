@@ -30,6 +30,9 @@ sbv-primitives = { workspace = true, features = [
 ] }
 sbv-helpers.workspace = true
 sbv-trie.workspace = true
+bytes = "1"
+static_assertions = "1.1.0"
+hex="0.4"
 
 [dev-dependencies]
 ctor.workspace = true

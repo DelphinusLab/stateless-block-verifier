@@ -3,6 +3,7 @@
 /// The spec of an Ethereum network
 #[cfg(feature = "chainspec")]
 pub mod chainspec;
+/// Get the main chain spec data hardcode
 pub mod main_chain_spec;
 
 /// Ethereum fork types
