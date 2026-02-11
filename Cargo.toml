@@ -54,7 +54,7 @@ alloy-rlp = { version = "0.3.10", default-features = false }
 # https://github.com/alloy-rs/trie
 alloy-trie = { version = "0.9.1", default-features = false }
 # https://github.com/alloy-rs/core
-alloy-primitives = { version = "1.4.1", default-features = false, features = ["map-hashbrown", "map-fxhash"] }
+alloy-primitives = { version = "1.4.1", default-features = false, features = ["map-hashbrown", "map-fxhash", "zkwasm-rust"] }
 # https://github.com/alloy-rs/evm
 alloy-evm = { version = "0.22.2", default-features = false }
 alloy-genesis={version = "1.0.41", default-features = false}

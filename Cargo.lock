@@ -4778,7 +4778,9 @@ name = "sbv-core"
 version = "2.0.0"
 dependencies = [
  "auto_impl",
+ "bytes",
  "ctor",
+ "hex",
  "itertools 0.14.0",
  "reth-primitives-traits",
  "reth-stateless",
@@ -4790,6 +4792,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_with",
+ "static_assertions",
  "tracing",
  "tracing-subscriber 0.3.22",
 ]
