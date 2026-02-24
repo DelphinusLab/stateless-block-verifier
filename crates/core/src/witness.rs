@@ -2,14 +2,15 @@ use auto_impl::auto_impl;
 use itertools::Itertools;
 use reth_primitives_traits::serde_bincode_compat::BincodeReprFor;
 use sbv_primitives::{
-    B256, Bytes, ChainId, SignatureError, U256,
+    Address, B256, Bytes, ChainId, SignatureError, U256,
     types::{
         Header,
-        consensus::{SignerRecoverable, TxEnvelope},
+        consensus::{GenesisAccount, SignerRecoverable, TxEnvelope},
         eips::eip4895::Withdrawals,
         reth::primitives::{Block, BlockBody, RecoveredBlock, SealedBlock},
     },
 };
+use std::collections::BTreeMap;
 
 /// Witness for a block.
 #[serde_with::serde_as]
@@ -176,5 +177,34 @@ impl BlockWitnessChunkExt for [BlockWitness] {
         self.iter()
             .tuple_windows()
             .all(|(a, b)| a.header.state_root == b.prev_state_root)
+    }
+}
+
+/// Witness for a genesis account data.
+#[derive(Clone, Debug, PartialEq)]
+pub struct GenesisAccountWitness {
+    pub accounts: Vec<(Address, u128)>,
+}
+
+impl GenesisAccountWitness {
+    /// Creates a new `GenesisAccountWitness` from a collection of
+    /// `(address, balance)` pairs.
+    pub fn new(accounts: Vec<(Address, u128)>) -> Self {
+        Self { accounts }
+    }
+
+    /// Witness to BTreeMap adapt to main spec.
+    pub fn into_genesis_accounts(self) -> BTreeMap<Address, GenesisAccount> {
+        let mut map = BTreeMap::new();
+        for (addr, bal) in self.accounts {
+            map.insert(
+                addr,
+                GenesisAccount {
+                    balance: U256::from(bal),
+                    ..Default::default()
+                },
+            );
+        }
+        map
     }
 }

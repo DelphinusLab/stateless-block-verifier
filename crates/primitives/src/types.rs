@@ -11,6 +11,8 @@ pub mod consensus {
     #[cfg(not(feature = "scroll"))]
     /// The Ethereum [EIP-2718] Transaction Envelope.
     pub type TxEnvelope = alloy_consensus::EthereumTxEnvelope<TxEip4844>;
+    /// export GenesisAccount
+    pub type GenesisAccount = alloy_genesis::GenesisAccount;
     #[cfg(feature = "scroll")]
     pub use scroll_alloy_consensus::{
         ScrollReceiptEnvelope as ReceiptEnvelope, ScrollTransaction,

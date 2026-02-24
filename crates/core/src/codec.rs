@@ -1,4 +1,5 @@
 use crate::BlockWitness;
+use crate::witness::GenesisAccountWitness;
 use sbv_primitives::{
     AccessList, Address, B64, B256, BlockNumber, Bloom, Bytes, ChainId, Signature, TxKind, U256,
     types::{
@@ -10,6 +11,7 @@ use sbv_primitives::{
         eips::eip7702::{Authorization, SignedAuthorization},
     },
 };
+
 /// Low-level zero-copy binary codec trait.
 ///
 /// This trait defines raw byte encoding and decoding for types that
@@ -990,6 +992,44 @@ impl RawCodec for BlockWitness {
             + self.block_hashes.raw_bytes_size()
             + self.states.raw_bytes_size()
             + self.codes.raw_bytes_size()
+    }
+}
+
+impl RawCodec for (Address, u128) {
+    type Output = Self;
+
+    fn from_raw_bytes(data: &[u8]) -> Option<(Self::Output, &[u8])> {
+        let (addr, data) = Address::from_raw_bytes(data)?;
+        let (balance, data) = u128::from_raw_bytes(data)?;
+
+        Some(((addr, balance), data))
+    }
+
+    fn to_raw_bytes(&self, dst: &mut Vec<u8>) {
+        self.0.to_raw_bytes(dst);
+        self.1.to_raw_bytes(dst);
+    }
+
+    fn raw_bytes_size(&self) -> usize {
+        self.0.raw_bytes_size() + self.1.raw_bytes_size()
+    }
+}
+
+impl RawCodec for GenesisAccountWitness {
+    type Output = Self;
+
+    fn from_raw_bytes(data: &[u8]) -> Option<(Self::Output, &[u8])> {
+        let (accounts, data) = Vec::<(Address, u128)>::from_raw_bytes(data)?;
+
+        Some((GenesisAccountWitness { accounts }, data))
+    }
+
+    fn to_raw_bytes(&self, dst: &mut Vec<u8>) {
+        self.accounts.to_raw_bytes(dst);
+    }
+
+    fn raw_bytes_size(&self) -> usize {
+        self.accounts.raw_bytes_size()
     }
 }
 

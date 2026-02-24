@@ -19,7 +19,90 @@ use std::sync::Arc;
 #[cfg(not(feature = "scroll-chainspec"))]
 pub type ChainSpec = reth_chainspec::ChainSpec;
 
-pub fn get_main_chain_spec() -> Arc<ChainSpec> {
+pub fn get_main_chain_spec(alloc: BTreeMap<Address, GenesisAccount>) -> Arc<ChainSpec> {
+    const MAINNET_DEPOSIT_CONTRACT_ADDRESS: Address =
+        address!("0x00000000219ab540356cbb839cbe05303d7705fa");
+
+    const MAINNET_DEPOSIT_CONTRACT: DepositContract = DepositContract::new(
+        MAINNET_DEPOSIT_CONTRACT_ADDRESS,
+        11052984,
+        b256!("0x649bbc62d0e31342afea4e5cd82d4049e7e1ee912fc0889aa790803be39038c5"),
+    );
+
+    let mut genesis = Genesis {
+        nonce: 66,
+        timestamp: 0,
+        extra_data: bytes!("0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa"),
+        gas_limit: 5000,
+        difficulty: U256::from(17179869184u64),
+        mix_hash: b256!("0x0000000000000000000000000000000000000000000000000000000000000000"),
+        coinbase: address!("0x0000000000000000000000000000000000000000"),
+        // the whole alloc calc introduces 30M circuit traces
+        // after hardcode genesis header, with stateless witness, the genesis accounts should be not needed
+        // in case needed some, input them from outside
+        alloc,
+        number: Some(0),
+        parent_hash: Some(b256!(
+            "0x0000000000000000000000000000000000000000000000000000000000000000"
+        )),
+        ..Default::default()
+    };
+    genesis.config.dao_fork_support = true;
+
+    let hardforks = EthereumHardfork::mainnet().into();
+    // let header = make_genesis_header(&genesis, &hardforks);
+    // Header just hardcode from make_genesis_header, for eth mainnet, it is fixed.
+    let header = Header {
+        parent_hash: b256!("0x0000000000000000000000000000000000000000000000000000000000000000"),
+        ommers_hash: b256!("0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"),
+        beneficiary: address!("0x0000000000000000000000000000000000000000"),
+        state_root: b256!("0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544"),
+        transactions_root: b256!(
+            "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
+        ),
+        receipts_root: b256!("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"),
+        logs_bloom: bloom!(
+            "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+        ),
+        difficulty: U256::from(17179869184u64),
+        number: 0,
+        gas_limit: 5000,
+        gas_used: 0,
+        timestamp: 0,
+        extra_data: bytes!("0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa"),
+        mix_hash: b256!("0x0000000000000000000000000000000000000000000000000000000000000000"),
+        nonce: b64!("0x0000000000000042"),
+        base_fee_per_gas: None,
+        withdrawals_root: None,
+        blob_gas_used: None,
+        excess_blob_gas: None,
+        parent_beacon_block_root: None,
+        requests_hash: None,
+    };
+
+    let spec = reth_chainspec::ChainSpec {
+        chain: Chain::mainnet(),
+        genesis_header: SealedHeader::new(header, MAINNET_GENESIS_HASH),
+        genesis,
+        // <https://etherscan.io/block/15537394>
+        paris_block_and_final_difficulty: Some((
+            15537394,
+            U256::from(58_750_003_716_598_352_816_469u128),
+        )),
+        hardforks,
+        // https://etherscan.io/tx/0xe75fb554e433e03763a1560646ee22dcb74e5274b34c5ad644e7c0f619a7e1d0
+        deposit_contract: Some(MAINNET_DEPOSIT_CONTRACT),
+        base_fee_params: BaseFeeParamsKind::Constant(BaseFeeParams::ethereum()),
+        prune_delete_limit: MAINNET_PRUNE_DELETE_LIMIT,
+        blob_params: BlobScheduleBlobParams::default(),
+    };
+
+    spec.into()
+}
+
+/*
+/// get all genesis accounts in genesis block
+fn get_whole_genesis_account()->BTreeMap<Address, GenesisAccount>{
     const GENESIS_DATA: &[(Address, u128)] = &[
         (
             address!("0x000d836201318ec6899a67540690382780743280"),
@@ -35594,14 +35677,7 @@ pub fn get_main_chain_spec() -> Arc<ChainSpec> {
             1000000000000000000000u128,
         ),
     ];
-    const MAINNET_DEPOSIT_CONTRACT_ADDRESS: Address =
-        address!("0x00000000219ab540356cbb839cbe05303d7705fa");
 
-    const MAINNET_DEPOSIT_CONTRACT: DepositContract = DepositContract::new(
-        MAINNET_DEPOSIT_CONTRACT_ADDRESS,
-        11052984,
-        b256!("0x649bbc62d0e31342afea4e5cd82d4049e7e1ee912fc0889aa790803be39038c5"),
-    );
 
     fn load_alloc() -> BTreeMap<Address, GenesisAccount> {
         GENESIS_DATA
@@ -35618,75 +35694,6 @@ pub fn get_main_chain_spec() -> Arc<ChainSpec> {
             .collect()
     }
 
-    let alloc = load_alloc();
-
-    let mut genesis = Genesis {
-        nonce: 66,
-        timestamp: 0,
-        extra_data: bytes!("0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa"),
-        gas_limit: 5000,
-        difficulty: U256::from(17179869184u64),
-        mix_hash: b256!("0x0000000000000000000000000000000000000000000000000000000000000000"),
-        coinbase: address!("0x0000000000000000000000000000000000000000"),
-        // todo: check if the alloc can be default as it seems it does not impact evm calc after hardcode the header
-        // the alloc calc introduces 30M traces
-        // alloc:BTreeMap::default(),
-        alloc,
-        number: Some(0),
-        parent_hash: Some(b256!(
-            "0x0000000000000000000000000000000000000000000000000000000000000000"
-        )),
-        ..Default::default()
-    };
-    genesis.config.dao_fork_support = true;
-
-    let hardforks = EthereumHardfork::mainnet().into();
-    // let header = make_genesis_header(&genesis, &hardforks);
-    // Header just hardcode from make_genesis_header, for eth mainnet, it is fixed.
-    let header = Header {
-        parent_hash: b256!("0x0000000000000000000000000000000000000000000000000000000000000000"),
-        ommers_hash: b256!("0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"),
-        beneficiary: address!("0x0000000000000000000000000000000000000000"),
-        state_root: b256!("0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544"),
-        transactions_root: b256!(
-            "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
-        ),
-        receipts_root: b256!("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"),
-        logs_bloom: bloom!(
-            "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
-        ),
-        difficulty: U256::from(17179869184u64),
-        number: 0,
-        gas_limit: 5000,
-        gas_used: 0,
-        timestamp: 0,
-        extra_data: bytes!("0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa"),
-        mix_hash: b256!("0x0000000000000000000000000000000000000000000000000000000000000000"),
-        nonce: b64!("0x0000000000000042"),
-        base_fee_per_gas: None,
-        withdrawals_root: None,
-        blob_gas_used: None,
-        excess_blob_gas: None,
-        parent_beacon_block_root: None,
-        requests_hash: None,
-    };
-
-    let spec = reth_chainspec::ChainSpec {
-        chain: Chain::mainnet(),
-        genesis_header: SealedHeader::new(header, MAINNET_GENESIS_HASH),
-        genesis,
-        // <https://etherscan.io/block/15537394>
-        paris_block_and_final_difficulty: Some((
-            15537394,
-            U256::from(58_750_003_716_598_352_816_469u128),
-        )),
-        hardforks,
-        // https://etherscan.io/tx/0xe75fb554e433e03763a1560646ee22dcb74e5274b34c5ad644e7c0f619a7e1d0
-        deposit_contract: Some(MAINNET_DEPOSIT_CONTRACT),
-        base_fee_params: BaseFeeParamsKind::Constant(BaseFeeParams::ethereum()),
-        prune_delete_limit: MAINNET_PRUNE_DELETE_LIMIT,
-        blob_params: BlobScheduleBlobParams::default(),
-    };
-
-    spec.into()
+    load_alloc()
 }
+*/

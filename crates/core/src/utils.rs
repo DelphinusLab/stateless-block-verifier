@@ -1,5 +1,6 @@
 use crate::codec::RawCodec;
 
+#[allow(dead_code)]
 pub fn get_bytes_from_u64_slice<F>(mut input_fn: F, dst: Option<Vec<u8>>) -> Vec<u8>
 where
     F: FnMut() -> u64,
@@ -28,6 +29,7 @@ where
 }
 
 /// head length prefix with bytes
+#[allow(dead_code)]
 pub fn get_bytes_with_length_prefix(data: &[u8]) -> Vec<u8> {
     let mut out_data = Vec::with_capacity(size_of::<u64>() + data.len());
     let length = data.len() as u64;
@@ -36,6 +38,7 @@ pub fn get_bytes_with_length_prefix(data: &[u8]) -> Vec<u8> {
     out_data
 }
 
+#[allow(dead_code)]
 pub fn put_bytes_to_u64_slice<F>(output_data: &[u8], mut output_fn: F)
 where
     F: FnMut(u64),
